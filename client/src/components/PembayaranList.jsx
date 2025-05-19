@@ -1,44 +1,33 @@
 import { useState, useMemo } from "react";
 import KwitansiPDF from "./KwitansiPDF";
+
 const PembayaranList = ({ data }) => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [sortBy, setSortBy] = useState("no_kwitansi"); // Changed default sort to no_kwitansi
-  const [sortOrder, setSortOrder] = useState("asc"); // Changed default order to ascending
+  const [sortBy, setSortBy] = useState("no_kwitansi");
+  const [sortOrder, setSortOrder] = useState("asc");
+  const [isCollapsed, setIsCollapsed] = useState(true);
 
-  // 🔍 Filter + Sort logic
   const filteredData = useMemo(() => {
     let result = [...data];
-
-    // Filter
     if (searchQuery) {
       const lower = searchQuery.toLowerCase();
-      result = result.filter((item) => item.nama.toLowerCase().includes(lower) || item.alamat.toLowerCase().includes(lower));
+      result = result.filter((item) => item.nama.toLowerCase().includes(lower) || item.alamat.toLowerCase().includes(lower) || item.no_kwitansi.toLowerCase().includes(lower));
     }
 
-    // Sort
     result.sort((a, b) => {
       let valA = a[sortBy];
       let valB = b[sortBy];
-
-      // Jika sorting tanggal
       if (sortBy === "tanggal") {
         valA = new Date(valA);
         valB = new Date(valB);
       }
-
-      // Khusus no_kwitansi - handle numerik dan alfanumerik
       if (sortBy === "no_kwitansi") {
-        // Cek apakah keduanya numerik murni
         const isNumericA = /^\d+$/.test(valA);
         const isNumericB = /^\d+$/.test(valB);
-
         if (isNumericA && isNumericB) {
-          // Jika keduanya numerik, bandingkan sebagai angka
           return sortOrder === "asc" ? parseInt(valA) - parseInt(valB) : parseInt(valB) - parseInt(valA);
         }
       }
-
-      // Default comparison
       if (valA < valB) return sortOrder === "asc" ? -1 : 1;
       if (valA > valB) return sortOrder === "asc" ? 1 : -1;
       return 0;
@@ -56,69 +45,144 @@ const PembayaranList = ({ data }) => {
     }
   };
 
-  // Helper to show sort indicator
-  const getSortIndicator = (column) => {
-    if (sortBy === column) {
-      return sortOrder === "asc" ? " ▲" : " ▼";
-    }
-    return "";
-  };
+  const getSortIndicator = (column) => (sortBy === column ? (sortOrder === "asc" ? " ▲" : " ▼") : "");
 
   return (
-    <div className="mt-8">
-      {/* 🔍 Search bar */}
-      <div className="mb-4 flex justify-between items-center">
-        <input type="text" placeholder="Cari nama atau alamat..." className="border px-3 py-2 rounded w-full max-w-sm" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+    <div className="mt-4 text-gray-800">
+      <div className="mb-6">
+        <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+          <div className="relative flex-grow">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg className="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <input
+              type="text"
+              placeholder="Search by name, address or receipt number..."
+              className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          <button
+            className="md:hidden flex items-center justify-center bg-indigo-600 hover:bg-indigo-700 transition text-white px-4 py-2 rounded-md shadow-sm text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            onClick={() => setIsCollapsed(!isCollapsed)}
+          >
+            <span className="mr-1">Filter & Sort</span>
+            <span>{isCollapsed ? "▾" : "▴"}</span>
+          </button>
+        </div>
+
+        <div className={`mt-3 ${isCollapsed ? "hidden" : "block"} md:hidden bg-gray-50 p-4 rounded-md shadow border border-gray-200`}>
+          <p className="font-medium text-gray-700 mb-2 text-sm">Sort by:</p>
+          <div className="grid grid-cols-2 gap-2">
+            {["nama", "alamat", "no_kwitansi", "jumlah", "tanggal"].map((key) => (
+              <button
+                key={key}
+                onClick={() => handleSort(key)}
+                className={`px-3 py-1.5 text-left text-sm rounded-md ${sortBy === key ? "bg-indigo-100 text-indigo-800 border border-indigo-200" : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50"} transition`}
+              >
+                {key.charAt(0).toUpperCase() + key.slice(1).replace("_", " ")}
+                {getSortIndicator(key)}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
-      {/* 📋 Table */}
       <div className="overflow-x-auto">
-        <table className="min-w-full border border-gray-200 rounded-md shadow-sm text-sm">
-          <thead className="bg-blue-500 text-white">
+        <table className="hidden md:table min-w-full divide-y divide-gray-200 rounded-md overflow-hidden shadow-sm border border-gray-200">
+          <thead className="bg-indigo-600 text-white">
             <tr>
-              <th className="py-2 px-4">No</th>
-              <th className="py-2 px-4 cursor-pointer" onClick={() => handleSort("nama")}>
-                Nama{getSortIndicator("nama")}
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">No</th>
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider cursor-pointer hover:bg-indigo-700 transition" onClick={() => handleSort("nama")}>
+                Name{getSortIndicator("nama")}
               </th>
-              <th className="py-2 px-4 cursor-pointer" onClick={() => handleSort("alamat")}>
-                Alamat{getSortIndicator("alamat")}
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider cursor-pointer hover:bg-indigo-700 transition" onClick={() => handleSort("alamat")}>
+                Address{getSortIndicator("alamat")}
               </th>
-              <th className="py-2 px-4 cursor-pointer" onClick={() => handleSort("jumlah")}>
-                Jumlah{getSortIndicator("jumlah")}
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Service</th>
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider cursor-pointer hover:bg-indigo-700 transition" onClick={() => handleSort("jumlah")}>
+                Amount{getSortIndicator("jumlah")}
               </th>
-              <th className="py-2 px-4 cursor-pointer" onClick={() => handleSort("tanggal")}>
-                Tanggal{getSortIndicator("tanggal")}
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider cursor-pointer hover:bg-indigo-700 transition" onClick={() => handleSort("tanggal")}>
+                Date{getSortIndicator("tanggal")}
               </th>
-              <th className="py-2 px-4 cursor-pointer" onClick={() => handleSort("no_kwitansi")}>
-                No Kwitansi{getSortIndicator("no_kwitansi")}
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider cursor-pointer hover:bg-indigo-700 transition" onClick={() => handleSort("no_kwitansi")}>
+                Receipt No.{getSortIndicator("no_kwitansi")}
               </th>
-              <th className="py-2 px-4">Keterangan</th>
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Notes</th>
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Action</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="bg-white divide-y divide-gray-200">
             {filteredData.map((item, index) => (
-              <tr key={item._id} className="odd:bg-white even:bg-gray-100">
-                <td className="px-4 py-2 text-center">{index + 1}</td>
-                <td className="px-4 py-2">{item.nama}</td>
-                <td className="px-4 py-2">{item.alamat}</td>
-                <td className="px-4 py-2">Rp {item.jumlah.toLocaleString()}</td>
-                <td className="px-4 py-2">{new Date(item.tanggal).toLocaleDateString()}</td>
-                <td className="px-4 py-2">{item.no_kwitansi}</td>
-                <td className="px-4 py-2">{item.keterangan}</td>
-                <td className="px-4 py-2 text-center">
-                  <KwitansiPDF pembayaran={item} />
+              <tr key={item._id} className="hover:bg-indigo-50 transition">
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{index + 1}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{item.nama}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.alamat}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.layanan}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Rp {item.jumlah.toLocaleString()}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(item.tanggal).toLocaleDateString()}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-indigo-600">{item.no_kwitansi}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.keterangan || <span className="text-gray-400 italic">None</span>}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <KwitansiPDF pembayaran={item} className="text-indigo-600 hover:text-indigo-900" />
                 </td>
               </tr>
             ))}
             {filteredData.length === 0 && (
               <tr>
-                <td colSpan="7" className="text-center py-4 text-gray-500">
-                  Data tidak ditemukan
+                <td colSpan="9" className="px-6 py-4 text-center text-sm text-gray-500">
+                  No data found
                 </td>
               </tr>
             )}
           </tbody>
         </table>
+
+        <div className="md:hidden space-y-3">
+          {filteredData.map((item) => (
+            <div key={item._id} className="bg-white border border-gray-200 rounded-lg shadow-sm p-4 transition hover:shadow-md">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h3 className="font-medium text-gray-900">{item.nama}</h3>
+                  <p className="text-gray-500 text-sm mt-1">{item.alamat}</p>
+                </div>
+                <span className="bg-indigo-100 text-indigo-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">#{item.no_kwitansi}</span>
+              </div>
+
+              <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
+                <div>
+                  <p className="text-gray-500 text-xs">Service:</p>
+                  <p className="text-gray-900">{item.layanan}</p>
+                </div>
+                <div>
+                  <p className="text-gray-500 text-xs">Amount:</p>
+                  <p className="text-gray-900 font-medium">Rp {item.jumlah.toLocaleString()}</p>
+                </div>
+                <div>
+                  <p className="text-gray-500 text-xs">Date:</p>
+                  <p className="text-gray-900">{new Date(item.tanggal).toLocaleDateString()}</p>
+                </div>
+                <div>
+                  <p className="text-gray-500 text-xs">Notes:</p>
+                  <p className="text-gray-900">{item.keterangan || <span className="text-gray-400 italic">None</span>}</p>
+                </div>
+              </div>
+
+              <div className="mt-4 pt-3 border-t border-gray-100 flex justify-end">
+                <KwitansiPDF pembayaran={item} className="text-sm font-medium text-indigo-600 hover:text-indigo-800" />
+              </div>
+            </div>
+          ))}
+          {filteredData.length === 0 && <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-lg border border-gray-200">No data found</div>}
+        </div>
+      </div>
+
+      <div className="mt-4 text-sm text-gray-500">
+        Showing {filteredData.length} of {data.length} records
       </div>
     </div>
   );
