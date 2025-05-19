@@ -10,7 +10,7 @@ const Dashboard = () => {
   const fetchData = async () => {
     try {
       setIsLoading(true);
-      const res = await axios.get("http://localhost:5000/api/pembayaran/list");
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/pembayaran/list`);
       setPembayaran(res.data);
     } catch (err) {
       console.error("Failed to fetch payment data:", err);
