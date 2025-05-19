@@ -36,7 +36,7 @@ const Dashboard = () => {
                 className="h-10 w-auto"
                 onError={(e) => {
                   e.target.onerror = null;
-                  e.target.src = "https://via.placeholder.com/40?text=LOGO";
+                  e.target.src = "https://d1csarkz8obe9u.cloudfront.net/posterpreviews/money-logo-icon-design-template-93daa436d812ece6bbf2e3b51331fa13_screen.jpg?ts=1671248097";
                 }}
               />
               <div>
