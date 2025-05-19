@@ -10,8 +10,14 @@ const app = express();
 
 app.use(
   cors({
-    origin: ["http://localhost:5000", "https://kwitansi-pembayaran.vercel.app/"],
+    origin: [
+      "http://localhost:5173", // development port Vite
+      "http://localhost:5000", // alternative development port
+      "https://kwitansi-ew3n.vercel.app", // production URL tanpa trailing slash
+    ],
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // specify allowed methods
+    allowedHeaders: ["Content-Type", "Authorization"], // specify allowed headers
   })
 );
 app.use(express.json());
