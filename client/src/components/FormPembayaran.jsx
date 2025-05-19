@@ -19,7 +19,7 @@ const FormPembayaran = ({ onSuccess }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post("http://localhost:5000/api/pembayaran/add", form);
+      await axios.post(`${import.meta.env.VITE_API_URL}/api/pembayaran/add`, form);
       onSuccess();
       setForm({
         nama: "",
