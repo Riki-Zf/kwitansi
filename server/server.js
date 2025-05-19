@@ -8,7 +8,12 @@ connectDB();
 
 const app = express();
 
-app.use(cors());
+app.use(
+  cors({
+    origin: ["http://localhost:5000", "https://kwitansi-pembayaran.vercel.app/"],
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 app.use("/api/pembayaran", require("./routes/pembayaranRoutes"));
