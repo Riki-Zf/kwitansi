@@ -6,6 +6,7 @@ const tambahPembayaran = async (req, res) => {
     const newPembayaran = new Pembayaran({
       ...req.body,
       no_kwitansi: `KW-${String(count + 1).padStart(5, "0")}`,
+      idPelanggan: `M${String(count + 1).padStart(3, "0")}`,
     });
     const saved = await newPembayaran.save();
     res.status(201).json(saved);
