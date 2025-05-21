@@ -10,16 +10,8 @@ const pembayaranSchema = new mongoose.Schema({
   dendah: { type: Number, default: 0 },
   jumlahBulan: { type: Number, default: 1 },
   iuranBulanan: { type: Number, default: 0 },
+  jumlahTV: { type: Number, default: 1 },
   idPelanggan: { type: String }, // untuk ID seperti M219
-});
-
-// Generate auto increment ID
-pembayaranSchema.pre("save", async function (next) {
-  if (!this.idPelanggan) {
-    const count = await mongoose.model("Pembayaran").countDocuments();
-    this.idPelanggan = `M${String(count + 1).padStart(3, "0")}`;
-  }
-  next();
 });
 
 module.exports = mongoose.model("Pembayaran", pembayaranSchema);

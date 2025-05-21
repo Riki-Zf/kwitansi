@@ -1,165 +1,122 @@
 import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
-import logoImage from "../assets/logo.png";
 
 const KwitansiPDF = ({ pembayaran }) => {
   const generatePDF = async () => {
-    const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-
-    doc.setDrawColor(0, 100, 0);
-    doc.setLineWidth(0.5);
-    doc.rect(10, 10, 190, 277);
-    doc.setLineWidth(0.2);
-    doc.rect(12, 12, 186, 273);
-
-    const logo = new Image();
-    logo.src = logoImage;
-    doc.addImage(logo, "PNG", 15, 15, 25, 25);
-
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(18);
-    doc.setTextColor(0, 100, 0);
-    doc.text("KWITANSI PEMBAYARAN WIFI", 105, 25, null, null, "center");
-
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "italic");
-    doc.text("Internet & TV Cable Billing System", 105, 32, null, null, "center");
-
-    doc.setDrawColor(0, 100, 0);
-    doc.setLineWidth(0.5);
-    doc.line(15, 40, 195, 40);
-
-    doc.setTextColor(0, 0, 0);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(11);
-    doc.text("INFORMASI PEMBAYARAN", 15, 48);
-
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(10);
-
-    doc.text("No. Kwitansi", 15, 55);
-    doc.text("Tanggal", 15, 62);
-    doc.text("Nama Pelanggan", 15, 69);
-    doc.text("Alamat", 15, 76);
-    doc.text("Layanan", 15, 83);
-
-    doc.text(":", 50, 55);
-    doc.text(":", 50, 62);
-    doc.text(":", 50, 69);
-    doc.text(":", 50, 76);
-    doc.text(":", 50, 83);
-
-    doc.setFont("helvetica", "bold");
-    doc.text(`${pembayaran.no_kwitansi}`, 55, 55);
-    doc.text(
-      `${new Date(pembayaran.tanggal).toLocaleDateString("id-ID", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-      })}`,
-      55,
-      62
-    );
-    doc.text(`${pembayaran.nama}`, 55, 69);
-    const splitAlamat = doc.splitTextToSize(pembayaran.alamat, 130);
-    doc.text(splitAlamat, 55, 76);
-    doc.text(`${pembayaran.layanan}`, 55, 83);
-
-    const lastLineY = 83 + (splitAlamat.length - 1) * 7;
-
-    doc.setDrawColor(0, 100, 0);
-    doc.setLineWidth(0.2);
-    doc.line(15, lastLineY + 10, 195, lastLineY + 10);
-
-    autoTable(doc, {
-      startY: lastLineY + 15,
-      margin: { left: 15, right: 15 },
-      headStyles: {
-        fillColor: [0, 100, 0],
-        textColor: [255, 255, 255],
-        fontStyle: "bold",
-        halign: "center",
-      },
-      head: [["Layanan", "Periode", "Deskripsi", "Jumlah"]],
-      body: [[pembayaran.layanan, pembayaran.periode || "1 Bulan", pembayaran.keterangan || "Pembayaran Layanan", `Rp ${pembayaran.jumlah.toLocaleString("id-ID")}`]],
-      bodyStyles: { fontSize: 10 },
-      alternateRowStyles: { fillColor: [240, 248, 240] },
+    // Initialize document with proper dimensions
+    const doc = new jsPDF({
+      orientation: "portrait",
+      unit: "mm",
+      format: [80, 150], // Smaller receipt-like format
     });
 
-    let tableEndY = doc.lastAutoTable?.finalY || lastLineY + 45;
-
-    doc.setFillColor(240, 248, 240);
-    doc.rect(95, tableEndY + 5, 100, 12, "F");
-    doc.setDrawColor(0, 100, 0);
-    doc.rect(95, tableEndY + 5, 100, 12);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(11);
-    doc.text("Total Pembayaran:", 100, tableEndY + 12);
-    doc.text(`Rp ${pembayaran.jumlah.toLocaleString("id-ID")}`, 190, tableEndY + 12, null, null, "right");
-
-    const terbilang = angkaTerbilang(pembayaran.jumlah);
-    const terbilangY = tableEndY + 25;
-    doc.setFillColor(240, 248, 240);
-    doc.rect(15, terbilangY, 180, 12, "F");
-    doc.setDrawColor(0, 100, 0);
-    doc.rect(15, terbilangY, 180, 12);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(10);
-    doc.text("Terbilang:", 20, terbilangY + 8);
-    doc.setFont("helvetica", "italic");
-    const splitTerbilang = doc.splitTextToSize(`${terbilang} rupiah`, 140);
-    doc.text(splitTerbilang, 55, terbilangY + 8);
-
-    const lunasY = terbilangY + 35;
-    doc.setFillColor(240, 255, 240);
-    doc.setDrawColor(0, 100, 0);
-    doc.setLineWidth(0.5);
-    doc.rect(15, lunasY - 15, 80, 30, "F");
-    doc.rect(15, lunasY - 15, 80, 30);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(18);
-    doc.setTextColor(0, 100, 0);
-    doc.text("LUNAS", 55, lunasY, null, null, "center");
-
-    doc.setFillColor(255, 255, 255);
-    doc.setDrawColor(0, 100, 0);
+    // Set default styles
+    doc.setFont("helvetica");
+    doc.setDrawColor(0, 0, 0);
     doc.setLineWidth(0.2);
-    doc.rect(120, lunasY - 15, 75, 55);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(10);
-    doc.setTextColor(0, 0, 0);
-    doc.text("Tanda tangan & Cap", 158, lunasY - 5, null, null, "center");
-    doc.line(130, lunasY + 20, 185, lunasY + 20);
-    doc.text("Pihak Admin", 158, lunasY + 30, null, null, "center");
 
-    const currentDate = new Date();
-    const printDate = currentDate.toLocaleDateString("id-ID", {
-      day: "numeric",
+    // Header
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    doc.text("Kwitansi iuran bulanan", 40, 10, { align: "center" });
+    doc.setFontSize(12);
+    doc.text("STARVISION TV KABEL", 40, 15, { align: "center" });
+
+    // Horizontal line separator
+    doc.line(10, 18, 70, 18);
+
+    // Left-aligned customer information
+    const leftMargin = 10;
+    let currentY = 25;
+
+    // Date
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text("Tanggal", leftMargin, currentY);
+    doc.setFont("helvetica", "bold");
+    const tanggalParts = new Date(pembayaran.tanggal).toLocaleDateString("id-ID").split("/");
+    const bulanIndo = ["", "JANUARI", "FEBRUARI", "MARET", "APRIL", "MEI", "JUNI", "JULI", "AGUSTUS", "SEPTEMBER", "OKTOBER", "NOVEMBER", "DESEMBER"];
+    const bulanText = bulanIndo[parseInt(tanggalParts[1])];
+    doc.text(`${tanggalParts[0].padStart(2, "0")}    ${bulanText}    ${tanggalParts[2]}`, leftMargin + 20, currentY);
+    currentY += 7;
+
+    // Name
+    doc.setFont("helvetica", "normal");
+    doc.text("Nama", leftMargin, currentY);
+    doc.setFont("helvetica", "bold");
+    doc.text(pembayaran.no_kwitansi || "F3/12", leftMargin + 20, currentY);
+    currentY += 7;
+
+    // Address
+    doc.setFont("helvetica", "normal");
+    doc.text("Alamat", leftMargin, currentY);
+    doc.setFont("helvetica", "bold");
+    doc.text(pembayaran.nama || "SAWITA HIJAU", leftMargin + 20, currentY);
+    currentY += 7;
+
+    // Customer service (empty line before)
+    currentY += 5;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.text("Customer service", leftMargin + 20, currentY);
+    currentY += 5;
+    doc.setFont("helvetica", "bold");
+    doc.text("Tlp. 0853 3333 8047", leftMargin + 20, currentY);
+    currentY += 10;
+
+    // ID Box (right-aligned)
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.text(`ID: ${pembayaran.idPelanggan || "M219"}`, 60, currentY, { align: "right" });
+    currentY += 10;
+
+    // Payment details table
+    const tableData = [
+      { label: "Iuran Bulanan", value: (pembayaran.iuranBulanan || 30000).toLocaleString("id-ID") },
+      { label: "Jumlah TV", value: (pembayaran.jumlahTV || 1).toString() },
+      { label: "Pararel / Bulanan", value: (pembayaran.pararel || 0).toString() },
+      { label: "Dendah / Bulan", value: (pembayaran.dendah || 0).toString() },
+      { label: "Jumlah Bulan", value: (pembayaran.jumlahBulan || 1).toString() },
+    ];
+
+    // Draw table
+    tableData.forEach((item) => {
+      doc.setFont("helvetica", "normal");
+      doc.text(item.label, leftMargin, currentY);
+      doc.setFont("helvetica", "bold");
+      doc.text(item.value, 60, currentY, { align: "right" });
+      currentY += 7;
+    });
+
+    // Total Payment
+    currentY += 5;
+    const totalAmount = pembayaran.jumlah || calculateTotal(pembayaran);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.text("TOTAL BAYAR :", leftMargin, currentY);
+    doc.text(totalAmount.toLocaleString("id-ID"), 60, currentY, { align: "right" });
+    currentY += 10;
+
+    // Footer - Issued date
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    const printDate = new Date().toLocaleDateString("id-ID", {
+      day: "2-digit",
       month: "long",
       year: "numeric",
     });
-    const printTime = currentDate.toLocaleTimeString("id-ID");
+    doc.text(`terbit pada ${printDate}`, 40, currentY, { align: "center" });
 
-    doc.setFont("helvetica", "italic");
-    doc.setFontSize(8);
-    doc.text(`Dicetak pada: ${printDate} ${printTime}`, 15, 280);
-    doc.setFont("helvetica", "normal");
-    doc.text("Kwitansi ini adalah bukti pembayaran yang sah.", 105, 287, null, null, "center");
-
-    doc.save(`kwitansi-${pembayaran.no_kwitansi}.pdf`);
+    // Save the PDF
+    doc.save(`kwitansi-${pembayaran.no_kwitansi || "receipt"}.pdf`);
   };
 
-  const angkaTerbilang = (angka) => {
-    const bilangan = ["", "Satu", "Dua", "Tiga", "Empat", "Lima", "Enam", "Tujuh", "Delapan", "Sembilan", "Sepuluh", "Sebelas"];
-    if (angka < 12) return bilangan[angka];
-    else if (angka < 20) return bilangan[angka - 10] + " Belas";
-    else if (angka < 100) return bilangan[Math.floor(angka / 10)] + " Puluh " + bilangan[angka % 10];
-    else if (angka < 200) return "Seratus " + angkaTerbilang(angka - 100);
-    else if (angka < 1000) return bilangan[Math.floor(angka / 100)] + " Ratus " + angkaTerbilang(angka % 100);
-    else if (angka < 2000) return "Seribu " + angkaTerbilang(angka - 1000);
-    else if (angka < 1000000) return angkaTerbilang(Math.floor(angka / 1000)) + " Ribu " + angkaTerbilang(angka % 1000);
-    else if (angka < 1000000000) return angkaTerbilang(Math.floor(angka / 1000000)) + " Juta " + angkaTerbilang(angka % 1000000);
-    else return angkaTerbilang(Math.floor(angka / 1000000000)) + " Miliar " + angkaTerbilang(angka % 1000000000);
+  // Calculate total payment
+  const calculateTotal = (item) => {
+    const monthly = item.iuranBulanan || 0;
+    const months = item.jumlahBulan || 1;
+    const parallel = item.pararel || 0;
+    const fine = item.dendah || 0;
+    return monthly * months + parallel + fine;
   };
 
   return (
