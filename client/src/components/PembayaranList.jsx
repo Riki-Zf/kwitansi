@@ -191,7 +191,7 @@ const PembayaranList = ({ data }) => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Rp {(item.iuranBulanan || 0).toLocaleString()}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.jumlahBulan || 1}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{shouldShowTVCount(item.layanan) ? item.jumlahTV || 1 : <span className="text-gray-400 italic">N/A</span>}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Rp {(item.pararel || 0).toLocaleString()}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500"> {(item.pararel || 0).toLocaleString()}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Rp {(item.dendah || 0).toLocaleString()}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Rp {totalAmount.toLocaleString()}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -249,7 +249,7 @@ const PembayaranList = ({ data }) => {
                   )}
                   <div>
                     <p className="text-gray-500 text-xs">Parallel Fee:</p>
-                    <p className="text-gray-900">Rp {(item.pararel || 0).toLocaleString()}</p>
+                    <p className="text-gray-900">{(item.pararel || 0).toLocaleString()}</p>
                   </div>
                   <div>
                     <p className="text-gray-500 text-xs">Fine:</p>
