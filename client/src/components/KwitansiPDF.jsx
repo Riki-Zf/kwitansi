@@ -103,7 +103,7 @@ const KwitansiPDF = ({ pembayaran }) => {
     const tableData = [
       { label: "Iuran Bulanan", value: `Rp ${data.iuranBulanan.toLocaleString("id-ID")}` },
       { label: "Jumlah TV", value: data.jumlahTV.toString() },
-      { label: "Pararel / Bulanan", value: `Rp ${data.pararel.toLocaleString("id-ID")}` },
+      { label: "Pararel / Bulanan", value: `${data.pararel.toLocaleString("id-ID")}` },
       { label: "Denda / Bulan", value: `Rp ${data.dendah.toLocaleString("id-ID")}` },
       { label: "Jumlah Bulan", value: data.jumlahBulan.toString() },
     ];
